@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, onMounted, watchEffect } from 'vue'
+import { ref, computed, onMounted, watchEffect, watch, nextTick } from 'vue'
+import { computePosition, flip, shift, offset } from '@floating-ui/dom'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/utils/api'
 import { useAuthStore } from '@/stores/auth'
@@ -37,6 +38,8 @@ const emit = defineEmits(['close-mobile-sidebar', 'expanded-change'])
 
 const expanded = ref(false)
 const profileMenuOpen = ref(false)
+const profileTriggerRef = ref(null)
+const profileDropdownRef = ref(null)
 const width = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
 const isMobile = computed(() => width.value < 768)
 
@@ -48,6 +51,60 @@ const isHidden = computed(() => mode.value === 'hidden')
 const isMobileShown = computed(() => mode.value === 'mobile-full')
 const isIcon = computed(() => mode.value === 'icon')
 const isFull = computed(() => mode.value === 'full')
+
+const reposition = async () => {
+    if (!profileMenuOpen.value) return
+
+    await nextTick()
+
+    const trigger = profileTriggerRef.value
+    const dropdown = profileDropdownRef.value
+    if (!trigger || !dropdown) return
+
+    const { x, y } = await computePosition(trigger, dropdown, {
+        placement: 'right-start',
+        middleware: [
+            offset(8),
+            flip(),
+            shift({ padding: 8 }),
+        ],
+    })
+
+    Object.assign(dropdown.style, {
+        left: `${x}px`,
+        top: `${y}px`,
+    })
+}
+
+watch(profileMenuOpen, (open) => {
+    if (open) reposition()
+})
+
+// watch(profileMenuOpen, async (open) => {
+//     if (!open) return
+
+//     // wait until dropdown exists in DOM
+//     await nextTick()
+
+//     const trigger = profileTriggerRef.value
+//     const dropdown = profileDropdownRef.value
+
+//     if (!trigger || !dropdown) return
+
+//     const { x, y } = await computePosition(trigger, dropdown, {
+//         placement: 'right-start', // default
+//         middleware: [
+//             offset(8),              // spacing
+//             flip(),                 // flip if no space
+//             shift({ padding: 8 })   // stay inside viewport
+//         ],
+//     })
+
+//     Object.assign(dropdown.style, {
+//         left: `${x}px`,
+//         top: `${y}px`,
+//     })
+// })
 
 const modules = ref([
     { id: 1, name: 'Gender & Power', icon: 'users2', color: 'text-advocacy-purple-600', progress: 65, status: 'in-progress' },
@@ -198,6 +255,8 @@ const handleResize = () => {
 
 if (windowExists) {
     window.addEventListener('resize', handleResize)
+
+    window.addEventListener('resize', reposition)
 }
 
 onMounted(() => {
@@ -206,6 +265,8 @@ onMounted(() => {
         loadAll()
         loadReqs()
     }
+
+    window.removeEventListener('resize', reposition)
 })
 
 watchEffect(() => emit('expanded-change', isFull.value))
@@ -394,40 +455,12 @@ watchEffect(() => emit('expanded-change', isFull.value))
                             </div>
 
                             <!-- Menu button -->
-                            <button @click="profileMenuOpen = !profileMenuOpen"
+                            <button ref="profileTriggerRef" @click="profileMenuOpen = !profileMenuOpen"
                                 class="p-1.5 rounded-lg hover:bg-platinum-200/50 dark:hover:bg-abyss-700 transition-colors flex-shrink-0"
                                 aria-label="Profile menu">
                                 <MoreVertical class="h-4 w-4 stroke-[2] text-platinum-500 dark:text-platinum-400" />
                             </button>
                         </div>
-
-                        <!-- Dropdown menu -->
-                        <transition name="fade">
-                            <div v-if="profileMenuOpen"
-                                class="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-abyss-800 rounded-lg shadow-lg ring-1 ring-black/10 dark:ring-white/10 z-50 overflow-hidden">
-                                <button @click="goProfile(); profileMenuOpen = false"
-                                    class="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-platinum-50 dark:hover:bg-abyss-700 transition-colors border-b border-platinum-100 dark:border-abyss-700 group">
-                                    <User
-                                        class="h-4 w-4 stroke-[1.75] text-platinum-500 group-hover:text-kaitoke-green-600 transition-colors" />
-                                    <span
-                                        class="font-medium text-abyss-900 dark:text-platinum-100 group-hover:text-kaitoke-green-600 dark:group-hover:text-kaitoke-green-400 transition-colors">Profile</span>
-                                </button>
-                                <button @click="goSettings(); profileMenuOpen = false"
-                                    class="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-platinum-50 dark:hover:bg-abyss-700 transition-colors border-b border-platinum-100 dark:border-abyss-700 group">
-                                    <Settings
-                                        class="h-4 w-4 stroke-[1.75] text-platinum-500 group-hover:text-advocacy-purple-600 transition-colors" />
-                                    <span
-                                        class="font-medium text-abyss-900 dark:text-platinum-100 group-hover:text-advocacy-purple-600 dark:group-hover:text-advocacy-purple-400 transition-colors">Settings</span>
-                                </button>
-                                <button @click="logout(); profileMenuOpen = false"
-                                    class="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors group">
-                                    <LogOut
-                                        class="h-4 w-4 stroke-[1.75] text-red-500 group-hover:text-red-600 transition-colors" />
-                                    <span
-                                        class="font-medium text-red-600 dark:text-red-400 group-hover:text-red-700 transition-colors">Logout</span>
-                                </button>
-                            </div>
-                        </transition>
                     </div>
                 </template>
 
@@ -435,7 +468,7 @@ watchEffect(() => emit('expanded-change', isFull.value))
                 <template v-else>
                     <div class="p-3 bg-platinum-50/50 dark:bg-abyss-950/40 relative flex justify-center">
                         <div class="relative">
-                            <button @click="profileMenuOpen = !profileMenuOpen"
+                            <button ref="profileTriggerRef" @click="profileMenuOpen = !profileMenuOpen"
                                 class="flex justify-center p-2 rounded-lg hover:bg-platinum-100 dark:hover:bg-abyss-800 transition-colors"
                                 aria-label="Profile menu">
                                 <div
@@ -445,7 +478,7 @@ watchEffect(() => emit('expanded-change', isFull.value))
                             </button>
 
                             <!-- Dropdown menu positioned to the right -->
-                            <transition name="fade">
+                            <!-- <transition name="fade">
                                 <div v-if="profileMenuOpen"
                                     class="absolute top-0 left-full ml-2 w-48 bg-white dark:bg-abyss-800 rounded-lg shadow-lg ring-1 ring-black/10 dark:ring-white/10 z-50 overflow-hidden">
                                     <button @click="goProfile(); profileMenuOpen = false"
@@ -470,10 +503,39 @@ watchEffect(() => emit('expanded-change', isFull.value))
                                             class="font-medium text-red-600 dark:text-red-400 group-hover:text-red-700 transition-colors">Logout</span>
                                     </button>
                                 </div>
-                            </transition>
+                            </transition> -->
                         </div>
                     </div>
                 </template>
+
+                <!-- Dropdown menu -->
+                <transition name="fade">
+                    <div v-if="profileMenuOpen" ref="profileDropdownRef"
+                        class="fixed z-50 w-48 bg-white dark:bg-abyss-800 rounded-lg shadow-lg ring-1 ring-black/10 dark:ring-white/10 z-50 overflow-hidden">
+                        <button @click="goProfile(); profileMenuOpen = false"
+                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-platinum-50 dark:hover:bg-abyss-700 transition-colors border-b border-platinum-100 dark:border-abyss-700 group">
+                            <User
+                                class="h-4 w-4 stroke-[1.75] text-platinum-500 group-hover:text-kaitoke-green-600 transition-colors" />
+                            <span
+                                class="font-medium text-abyss-900 dark:text-platinum-100 group-hover:text-kaitoke-green-600 dark:group-hover:text-kaitoke-green-400 transition-colors">Profile</span>
+                        </button>
+                        <button @click="goSettings(); profileMenuOpen = false"
+                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-platinum-50 dark:hover:bg-abyss-700 transition-colors border-b border-platinum-100 dark:border-abyss-700 group">
+                            <Settings
+                                class="h-4 w-4 stroke-[1.75] text-platinum-500 group-hover:text-advocacy-purple-600 transition-colors" />
+                            <span
+                                class="font-medium text-abyss-900 dark:text-platinum-100 group-hover:text-advocacy-purple-600 dark:group-hover:text-advocacy-purple-400 transition-colors">Settings</span>
+                        </button>
+                        <button @click="logout(); profileMenuOpen = false"
+                            class="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors group">
+                            <LogOut
+                                class="h-4 w-4 stroke-[1.75] text-red-500 group-hover:text-red-600 transition-colors" />
+                            <span
+                                class="font-medium text-red-600 dark:text-red-400 group-hover:text-red-700 transition-colors">Logout</span>
+                        </button>
+                    </div>
+                </transition>
+
             </div>
         </div>
     </aside>

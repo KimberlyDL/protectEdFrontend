@@ -1,5 +1,5 @@
 <template>
-    <div class="relative">
+    <div ref="profileRef" class="relative">
         <button @click.stop="open = !open" type="button" :aria-expanded="open" class="group flex items-center gap-2 rounded-full bg-sun-100 p-1 pr-2
              hover:bg-sun-200 text-abyss-900
              dark:bg-abyss-700 dark:hover:bg-abyss-600 dark:text-platinum-200 transition">
@@ -52,6 +52,8 @@ const router = useRouter()
 const auth = useAuthStore()
 const profileStore = useProfileStore()
 
+const profileRef = ref(null)
+
 // 1. Get the display name (priority: profile data -> auth user name -> 'User')
 const name = computed(() => {
     return profileStore.profile?.display_name || auth.user?.name || 'User'
@@ -65,12 +67,19 @@ const avatar = computed(() => {
     return profileStore.avatarUrl(80) // 80px is plenty for a dropdown
 })
 
-// Close dropdown when clicking outside
+// // Close dropdown when clicking outside
+// function onClickAway(e) {
+//     if (open.value && !e.target.closest('.relative')) {
+//         open.value = false
+//     }
+// }
+
 function onClickAway(e) {
-    if (open.value && !e.target.closest('.relative')) {
+    if (open.value && profileRef.value && !profileRef.value.contains(e.target)) {
         open.value = false
     }
 }
+
 
 onMounted(async () => {
     document.addEventListener('click', onClickAway)

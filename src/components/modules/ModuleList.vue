@@ -200,8 +200,10 @@ const loadMore = async () => {
     await moduleStore.loadNextPage();
 };
 
+const emit = defineEmits(['view']);
+
 const viewModule = (id) => {
-    router.push({ name: 'user.module', params: { id } });
+    emit('view', id);
 };
 
 const formatLabel = (value) => {

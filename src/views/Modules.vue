@@ -96,7 +96,7 @@
                 </button>
             </div>
 
-            <ModuleList />
+            <ModuleList @view="viewModule" />
         </section>
 
         <!-- Create module modal -->
@@ -126,10 +126,7 @@ const stats = computed(() => moduleStore.stats);
 
 const canManageModules = computed(() => {
     const user = authStore.user;
-    // return user && (user.role === 'admin' || user.role === 'educator');
-    return true;
-
-    // TODO for debug lang ng function, ibalik to sa proper verification
+    return user && (user.role === 'admin' || user.role === 'educator');
 });
 
 // const avgCompletion = computed(() => {
@@ -138,7 +135,15 @@ const canManageModules = computed(() => {
 // });
 
 const viewModule = (id) => {
-    router.push({ name: 'user.module', params: { id } });
+    const userRole = authStore.user?.role;
+    
+    if (['admin', 'educator', 'moderator'].includes(userRole)) {
+        router.push({ name: 'facilitator.module', params: { id } });
+    } else if (userRole === 'player') {
+        router.push({ name: 'user.module', params: { id } });
+    } else {
+        toast.error('Unauthorized: Role not recognized.');
+    }
 };
 
 const handleModuleCreated = () => {

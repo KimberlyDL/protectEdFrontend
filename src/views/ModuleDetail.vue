@@ -271,8 +271,8 @@ const showEditModal = ref(false);
 const module = computed(() => moduleStore.currentModule);
 const canEdit = computed(() => {
     const user = authStore.user;
-    // return user && (user.role === 'admin' || user.role === 'educator');
-    return true;
+    return user && (user.role === 'admin' || user.role === 'educator');
+    //return true;
 
     // TODO for debug lang ng function, ibalik to sa proper verification
 });

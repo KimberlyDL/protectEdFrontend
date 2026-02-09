@@ -84,6 +84,13 @@ const authenticatedRoutes = [
                 component: () => import('@/views/Modules.vue'),
                 meta: { title: 'My Modules' }
             },
+            {
+                path: 'modules/:id',
+                name: 'facilitator.module',
+                component: () => import('@/views/ModuleDetail.vue'),
+                meta: { title: 'Module' }
+            },
+
             // {
             //     path: 'modules/create',
             //     name: 'facilitator.modules.create',
