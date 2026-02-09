@@ -3,6 +3,10 @@ import AdminDashboardLayout from '@/layouts/AdminDashboardLayout.vue';
 import FacilitatorDashboardLayout from '@/layouts/FacilitatorDashboardLayout.vue';
 import UserDashboardLayout from '@/layouts/UserDashboardLayout.vue';
 
+// ===== Helper for the shared components to keep code DRY ======
+const ProfileView = () => import('@/views/Profile.vue');
+const SettingsView = () => import('@/views/Settings.vue');
+
 const authenticatedRoutes = [
     // ===== User/Player Routes =====
     {
@@ -40,12 +44,17 @@ const authenticatedRoutes = [
                 component: () => import('@/views/dashboard/Leaderboard.vue'),
                 meta: { title: 'Leaderboard' }
             },
-            {
-                path: 'settings',
-                name: 'user.settings',
-                component: () => import('@/views/Settings.vue'),
+            {   path: 'profile', 
+                name: 'user.profile', 
+                component: ProfileView, 
+                meta: { title: 'My Profile' }
+            },
+            {   path: 'settings', 
+                name: 'user.settings', 
+                component: SettingsView, 
                 meta: { title: 'Settings' }
             },
+            
             {
                 path: 'manage-badges',
                 name: 'user.managebadges',
@@ -121,6 +130,17 @@ const authenticatedRoutes = [
             //     component: () => import('@/views/facilitator/Reviews.vue'),
             //     meta: { title: 'Pending Reviews' }
             // },
+
+            {   path: 'profile', 
+                name: 'facilitator.profile', 
+                component: ProfileView, 
+                meta: { title: 'My Profile' } 
+            },
+            {   path: 'settings', 
+                name: 'facilitator.settings', 
+                component: SettingsView, 
+                meta: { title: 'Settings' } 
+            },
         ]
     },
 
@@ -200,28 +220,38 @@ const authenticatedRoutes = [
             //     component: () => import('@/views/admin/NotificationSettings.vue'),
             //     meta: { title: 'Notification Settings' }
             // },
+            {   path: 'profile', 
+                name: 'admin.profile', 
+                component: ProfileView, 
+                meta: { title: 'My Profile' } 
+            },
+            {   path: 'settings', 
+                name: 'admin.settings', 
+                component: SettingsView, 
+                meta: { title: 'Account Settings' } 
+            },
         ]
     },
 
     // ===== Profile & Settings (All Authenticated Users - Role-Agnostic) =====
-    {
-        path: '/profile',
-        name: 'profile',
-        component: () => import('@/views/Profile.vue'),
-        meta: {
-            requiresAuth: true,
-            title: 'My Profile'
-        }
-    },
-    {
-        path: '/settings',
-        name: 'settings',
-        component: () => import('@/views/Settings.vue'),
-        meta: {
-            requiresAuth: true,
-            title: 'Account Settings'
-        }
-    }
+    // {
+    //     path: '/profile',
+    //     name: 'profile',
+    //     component: () => import('@/views/Profile.vue'),
+    //     meta: {
+    //         requiresAuth: true,
+    //         title: 'My Profile'
+    //     }
+    // },
+    // {
+    //     path: '/settings',
+    //     name: 'settings',
+    //     component: () => import('@/views/Settings.vue'),
+    //     meta: {
+    //         requiresAuth: true,
+    //         title: 'Account Settings'
+    //     }
+    // }
 ]
 
 export default authenticatedRoutes
