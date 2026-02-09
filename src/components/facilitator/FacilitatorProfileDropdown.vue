@@ -108,7 +108,7 @@ defineExpose({ $el: dropdownRef });
                     </button>
                     <button @click="handleAction('facilitator.settings')" class="menu-item group">
                         <SettingsIcon class="h-4 w-4 text-gray-400 group-hover:text-electric-lime-600 transition-colors" />
-                        <span class="font-medium">Settings</span>
+                        <span class="font-medium">Account Settings</span>
                     </button>
                     <div class="my-1 border-t border-gray-100 dark:border-abyss-700"></div>
                     <button @click="handleLogout" class="menu-item group text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20">

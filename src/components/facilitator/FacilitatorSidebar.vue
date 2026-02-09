@@ -69,28 +69,28 @@ watch(() => route.path, () => {
 
 <template>
     <aside :class="[
-        'fixed top-16 left-0 bottom-0 z-50 flex flex-col', // Fixed: top-16 starts sidebar below header
+        'fixed top-16 left-0 bottom-0 z-50 flex flex-col', // Added top-16 to start below header
         'bg-white/90 backdrop-blur-xl border-r border-gray-200/50',
         'dark:bg-abyss-900/95 dark:border-abyss-800/50 text-abyss-900 dark:text-platinum-300',
-        'transition-[width] duration-300 ease-in-out shadow-xl overflow-x-hidden', // Fixed: overflow-x-hidden stops clipping
+        'transition-[width] duration-300 ease-in-out shadow-xl',
         sidebarStore.isExpanded ? 'w-64' : 'w-20',
         sidebarStore.isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
     ]">
         <div class="hidden md:flex items-center h-16 px-4 border-b border-gray-200/50 dark:border-abyss-800/50 flex-shrink-0 transition-all duration-300"
-     :class="sidebarStore.isExpanded ? 'justify-between' : 'justify-center'">
-    
-    <span v-if="sidebarStore.isExpanded" 
-          class="text-[10px] font-black uppercase tracking-[0.2em] text-platinum-400 animate-in fade-in duration-500">
-        Navigation
-    </span>
+            :class="sidebarStore.isExpanded ? 'justify-between' : 'justify-center'">
 
-    <button @click="sidebarStore.toggleExpanded" 
-        class="p-1.5 rounded-lg bg-gray-50 dark:bg-abyss-800 hover:scale-110 transition-all text-electric-lime-600 border border-transparent hover:border-electric-lime-500/50 outline-none"
-        :aria-label="sidebarStore.isExpanded ? 'Collapse sidebar' : 'Expand sidebar'">
-        <ChevronsLeftIcon v-if="sidebarStore.isExpanded" class="h-4 w-4" />
-        <ChevronsRightIcon v-else class="h-4 w-4" />
-    </button>
-</div>
+            <span v-if="sidebarStore.isExpanded"
+                class="text-[10px] font-black uppercase tracking-[0.2em] text-platinum-400 animate-in fade-in duration-500">
+                Navigation
+            </span>
+
+            <button @click="sidebarStore.toggleExpanded"
+                class="p-1.5 rounded-lg bg-gray-50 dark:bg-abyss-800 hover:scale-110 transition-all text-electric-lime-600 border border-transparent hover:border-electric-lime-500/50 outline-none"
+                :aria-label="sidebarStore.isExpanded ? 'Collapse sidebar' : 'Expand sidebar'">
+                <ChevronsLeftIcon v-if="sidebarStore.isExpanded" class="h-4 w-4" />
+                <ChevronsRightIcon v-else class="h-4 w-4" />
+            </button>
+        </div>
 
         <nav class="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-1.5 custom-scrollbar">
             <SidebarNavItem to="/facilitator/dashboard" :exact="true"
@@ -141,9 +141,15 @@ watch(() => route.path, () => {
             </SidebarNavItem>
         </nav>
 
-        <div ref="profileTriggerWrapper" class="mt-auto flex flex-col border-t border-gray-200 dark:border-abyss-800">
-            <FacilitatorProfileDropdown v-model:open="profileMenuOpen" :expanded="sidebarStore.isExpanded"
-                :is-open="profileMenuOpen" @close="profileMenuOpen = false" ref="profileDropdownRef" />
+        <div ref="profileTriggerWrapper" class="mt-auto border-t border-gray-200 dark:border-abyss-800 bg-white/50 dark:bg-abyss-900/50">
+            <FacilitatorProfileDropdown 
+                v-model:open="profileMenuOpen" 
+                :expanded="sidebarStore.isExpanded"
+                :is-open="profileMenuOpen" 
+                :trigger-ref="profileTriggerWrapper"
+                @close="profileMenuOpen = false" 
+                ref="profileDropdownRef" 
+            />
         </div>
     </aside>
 </template>
