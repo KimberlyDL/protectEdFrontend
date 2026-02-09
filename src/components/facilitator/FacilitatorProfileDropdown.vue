@@ -1,111 +1,135 @@
-<!-- src/components/facilitator/FacilitatorProfileDropdown.vue -->
+<script setup>
+import { ref, watch, nextTick, defineExpose, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import { computePosition, flip, shift, offset } from '@floating-ui/dom';
+import { UserIcon, SettingsIcon, LogOutIcon, MoreVertical } from 'lucide-vue-next';
+
+const props = defineProps({
+    expanded: Boolean,
+    open: Boolean,
+    triggerRef: Object // Passed from FacilitatorSidebar for positioning
+});
+
+const emit = defineEmits(['update:open']);
+const router = useRouter();
+const authStore = useAuthStore();
+const dropdownRef = ref(null);
+
+// Logic: Shared Repositioning
+const reposition = async () => {
+    if (!props.open || !dropdownRef.value || !props.triggerRef) return;
+    await nextTick();
+    const { x, y } = await computePosition(props.triggerRef, dropdownRef.value, {
+        placement: 'right-end',
+        middleware: [offset(12), flip(), shift({ padding: 8 })],
+    });
+    Object.assign(dropdownRef.value.style, { left: `${x}px`, top: `${y}px` });
+};
+
+watch(() => props.open, (val) => val && reposition());
+
+const handleLogout = async () => {
+    emit('update:open', false);
+    await authStore.logout();
+    router.push('/facilitator/login');
+};
+
+const handleAction = (routeName) => {
+    emit('update:open', false);
+    router.push({ name: routeName });
+};
+
+const avatar = computed(() => authStore.user?.avatar_url || `https://ui-avatars.com/api/?name=${authStore.user?.name || 'Facilitator'}&background=84cc16&color=fff`);
+
+// Expose internal dropdown element for the sidebar's Floating UI logic
+defineExpose({ $el: dropdownRef });
+</script>
+
 <template>
-    <div class="relative" ref="dropdownRef">
-        <button @click="isOpen = !isOpen"
-            class="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-abyss-800 transition-colors">
-            <div class="relative flex-shrink-0">
-                <img :src="authStore.user?.avatar_url || defaultAvatar" alt="Facilitator Avatar"
-                    class="h-10 w-10 rounded-full object-cover border-2 border-electric-lime-500" />
-                <div
-                    class="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white dark:border-abyss-900 rounded-full">
+    <div class="relative">
+        <div
+            class="group w-full flex items-center transition-all duration-300"
+            :class="[
+                expanded 
+                    ? 'justify-between p-4 bg-gray-50/50 dark:bg-abyss-950/40' 
+                    : 'justify-center p-4' // Cleaned up p-2 to p-4 to match Admin height
+            ]"
+        >
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="relative flex-shrink-0">
+                    <button v-if="!expanded" type="button" @click.stop="emit('update:open', !open)" class="outline-none">
+                        <img :src="avatar" 
+                            class="h-10 w-10 rounded-full object-cover border-2 border-electric-lime-500 shadow-lg shadow-electric-lime-500/20 group-hover:scale-110 transition-transform" />
+                    </button>
+                    <img v-else :src="avatar" 
+                        class="h-10 w-10 rounded-full object-cover border-2 border-electric-lime-500 shadow-sm" />
+                    
+                    <span class="absolute bottom-0 right-0 h-3 w-3 bg-green-500 border-2 border-white dark:border-abyss-900 rounded-full"></span>
+                </div>
+
+                <div v-if="expanded" class="flex-1 min-w-0 text-left animate-in fade-in slide-in-from-left-2">
+                    <p class="text-xs font-bold text-abyss-900 dark:text-white truncate">
+                        {{ authStore.user?.name || 'Facilitator' }}
+                    </p>
+                    <p class="text-[10px] text-gray-500 dark:text-platinum-400 truncate uppercase font-semibold">
+                        Facilitator
+                    </p>
                 </div>
             </div>
 
-            <transition name="fade">
-                <div v-if="expanded" class="flex-1 text-left overflow-hidden">
-                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+            <button
+                v-if="expanded"
+                type="button"
+                @click.stop="emit('update:open', !open)"
+                class="p-1.5 rounded-lg hover:bg-gray-200/50 dark:hover:bg-abyss-700 transition-colors flex-shrink-0 outline-none"
+            >
+                <MoreVertical class="h-4 w-4 stroke-[2] text-gray-400" />
+            </button>
+        </div>
+
+        <transition name="fade-pop">
+            <div v-if="open" ref="dropdownRef"
+                class="fixed z-50 w-56 bg-white dark:bg-abyss-800 rounded-xl shadow-2xl border border-gray-200/50 dark:border-abyss-700 overflow-hidden">
+                
+                <div class="px-4 py-3 border-b border-gray-100 dark:border-abyss-700 bg-gray-50/50 dark:bg-abyss-900/20">
+                    <p class="text-xs font-bold text-abyss-900 dark:text-platinum-50 truncate">
                         {{ authStore.user?.name || 'Facilitator' }}
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        {{ authStore.user?.email }}
+                    <p class="text-[10px] text-electric-lime-600 truncate uppercase tracking-widest font-black">
+                        Facilitator Portal
                     </p>
                 </div>
-            </transition>
 
-            <ChevronUpIcon v-if="expanded && isOpen" class="h-4 w-4 text-gray-400 flex-shrink-0" />
-            <ChevronDownIcon v-else-if="expanded" class="h-4 w-4 text-gray-400 flex-shrink-0" />
-        </button>
-
-        <!-- Dropdown Menu -->
-        <transition name="dropdown">
-            <div v-if="isOpen"
-                class="absolute bottom-full left-0 right-0 mb-2 py-2 bg-white dark:bg-abyss-800 rounded-lg shadow-xl border border-gray-200 dark:border-abyss-700">
-                <router-link to="/profile"
-                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-abyss-700">
-                    <UserIcon class="h-4 w-4" />
-                    <span>My Profile</span>
-                </router-link>
-
-                <router-link to="/settings"
-                    class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-abyss-700">
-                    <SettingsIcon class="h-4 w-4" />
-                    <span>Settings</span>
-                </router-link>
-
-                <div class="border-t border-gray-200 dark:border-abyss-700 my-2"></div>
-
-                <button @click="handleLogout"
-                    class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20">
-                    <LogOutIcon class="h-4 w-4" />
-                    <span>Logout</span>
-                </button>
+                <div class="p-2 space-y-1">
+                    <button @click="handleAction('facilitator.profile')" class="menu-item group">
+                        <UserIcon class="h-4 w-4 text-gray-400 group-hover:text-electric-lime-600 transition-colors" />
+                        <span class="font-medium">My Profile</span>
+                    </button>
+                    <button @click="handleAction('facilitator.settings')" class="menu-item group">
+                        <SettingsIcon class="h-4 w-4 text-gray-400 group-hover:text-electric-lime-600 transition-colors" />
+                        <span class="font-medium">Settings</span>
+                    </button>
+                    <div class="my-1 border-t border-gray-100 dark:border-abyss-700"></div>
+                    <button @click="handleLogout" class="menu-item group text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20">
+                        <LogOutIcon class="h-4 w-4 text-red-400 group-hover:text-red-600 transition-colors" />
+                        <span class="font-bold">Logout</span>
+                    </button>
+                </div>
             </div>
         </transition>
     </div>
 </template>
 
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
-import {
-    ChevronUpIcon,
-    ChevronDownIcon,
-    UserIcon,
-    SettingsIcon,
-    LogOutIcon
-} from 'lucide-vue-next';
-
-const props = defineProps({
-    expanded: Boolean
-});
-
-const router = useRouter();
-const authStore = useAuthStore();
-const isOpen = ref(false);
-const dropdownRef = ref(null);
-
-const defaultAvatar = 'https://ui-avatars.com/api/?name=Facilitator&background=84cc16&color=fff';
-
-const handleLogout = async () => {
-    await authStore.logout();
-    router.push('/facilitator/login');
-};
-
-const handleClickOutside = (event) => {
-    if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
-        isOpen.value = false;
-    }
-};
-
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
-});
-
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
-});
-</script>
-
 <style scoped>
-.dropdown-enter-active,
-.dropdown-leave-active {
-    transition: all 0.2s ease;
+@reference "@/style.css";   
+
+.menu-item { 
+    @apply w-full flex items-center gap-3 px-3 py-2.5 text-sm text-left rounded-lg transition-all 
+           hover:bg-gray-50 dark:hover:bg-abyss-700/50 text-abyss-900 dark:text-platinum-200; 
 }
 
-.dropdown-enter-from,
-.dropdown-leave-to {
-    opacity: 0;
-    transform: translateY(10px);
-}
+.fade-pop-enter-active { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+.fade-pop-enter-from { opacity: 0; transform: scale(0.95) translateX(-10px); }
+.fade-pop-leave-to { opacity: 0; transform: scale(0.95); }
 </style>
