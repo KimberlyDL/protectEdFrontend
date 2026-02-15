@@ -123,6 +123,10 @@ function goProfile() {
     router.push({ name: 'user.profile' })
 }
 
+function goStats() {
+    router.push({ name: 'user.stats' })
+}
+
 async function logout() {
     try {
         await auth.logout()
@@ -326,7 +330,7 @@ watchEffect(() => emit('expanded-change', isFull.value))
                                 </div>
                                 <div v-if="!isIcon && module.progress > 0" class="flex flex-col items-end">
                                     <span class="text-[10px] font-black text-calm-lavender-600/70">{{ module.progress
-                                        }}%</span>
+                                    }}%</span>
                                 </div>
                             </div>
                         </button>
@@ -388,6 +392,26 @@ watchEffect(() => emit('expanded-change', isFull.value))
                                 </div>
                                 <span v-if="!isIcon"
                                     class="font-heading text-sm font-semibold group-hover:translate-x-1 transition-transform text-platinum-600 dark:text-platinum-400">Leaderboard</span>
+                            </div>
+                        </button>
+
+                        <button @click="goStats()"
+                            :class="['sidebar-btn group', route.name === 'user.stats' ? 'bg-calm-lavender-50 dark:bg-calm-lavender-900/20' : '']">
+                            <div :class="['flex items-center gap-3', isIcon ? 'justify-center' : 'justify-start']">
+                                <div
+                                    class="p-2 rounded-lg group-hover:bg-calm-lavender-100 dark:group-hover:bg-calm-lavender-900/30 transition-colors">
+                                    <svg :class="[
+                                        'h-5 w-5 stroke-[1.75] transition-colors',
+                                        route.name === 'user.stats' ? 'text-calm-lavender-600' : 'text-platinum-500 group-hover:text-calm-lavender-600'
+                                    ]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                    </svg>
+                                </div>
+                                <span v-if="!isIcon" :class="[
+                                    'font-heading text-sm font-semibold group-hover:translate-x-1 transition-transform',
+                                    route.name === 'user.stats' ? 'text-calm-lavender-700 dark:text-calm-lavender-300' : 'text-platinum-600 dark:text-platinum-400'
+                                ]">My Stats</span>
                             </div>
                         </button>
 
@@ -493,14 +517,16 @@ watchEffect(() => emit('expanded-change', isFull.value))
                             <User
                                 class="h-4 w-4 stroke-[1.75] text-platinum-500 group-hover:text-calm-lavender-600 transition-colors" />
                             <span
-                                class="font-medium text-abyss-900 dark:text-platinum-100 group-hover:text-calm-lavender-600 dark:group-hover:text-calm-lavender-400 transition-colors">My Profile</span>
+                                class="font-medium text-abyss-900 dark:text-platinum-100 group-hover:text-calm-lavender-600 dark:group-hover:text-calm-lavender-400 transition-colors">My
+                                Profile</span>
                         </button>
                         <button @click="goSettings(); profileMenuOpen = false"
                             class="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-platinum-50 dark:hover:bg-abyss-700 transition-colors border-b border-platinum-100 dark:border-abyss-700 group">
                             <Settings
                                 class="h-4 w-4 stroke-[1.75] text-platinum-500 group-hover:text-advocacy-purple-600 transition-colors" />
                             <span
-                                class="font-medium text-abyss-900 dark:text-platinum-100 group-hover:text-advocacy-purple-600 dark:group-hover:text-advocacy-purple-400 transition-colors">Account Settings</span>
+                                class="font-medium text-abyss-900 dark:text-platinum-100 group-hover:text-advocacy-purple-600 dark:group-hover:text-advocacy-purple-400 transition-colors">Account
+                                Settings</span>
                         </button>
                         <button @click="logout(); profileMenuOpen = false"
                             class="w-full flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors group">

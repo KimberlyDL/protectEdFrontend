@@ -46,8 +46,8 @@
                 class="badge-card bg-white rounded-lg shadow-lg p-4 hover:shadow-xl transition"
                 :class="getRarityClass(badge.rarity)">
                 <div class="relative">
-                    <img :src="badge.iconUrl" :alt="badge.name" class="w-full h-48 object-contain rounded-lg mb-4"
-                        @error="handleImageError" />
+                    <img :src="getBadgeUrl(badge.iconKey)" :alt="badge.name"
+                        class="w-full h-48 object-contain rounded-lg mb-4" @error="handleImageError" />
                     <span :class="getRarityBadgeClass(badge.rarity)"
                         class="absolute top-2 right-2 px-2 py-1 text-xs font-bold rounded-full">
                         {{ formatRarity(badge.rarity) }}
@@ -120,12 +120,13 @@ import { ref, reactive, onMounted, computed } from 'vue';
 import { Plus, Edit, Trash2, Award } from 'lucide-vue-next';
 import axios from 'axios';
 import BadgeModal from '@components/ui/badge_modal.vue';
+import { getBadgeUrl } from '@/utils/cloudflare';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 const badges = ref([]);
-const categories = ref([]);
-const rarities = ref([]);
+const categories = ref(['General', 'VAWC', 'GAD']);
+const rarities = ref(['Common', 'Rare']);
 const loading = ref(false);
 const showModal = ref(false);
 const selectedBadge = ref(null);
@@ -163,7 +164,7 @@ async function fetchBadges() {
             ...filters
         };
 
-        const response = await axios.get(`${API_URL}/api/badges`, { params });
+        const response = await axios.get(`${API_URL}/api/v1/badges`, { params });
 
         badges.value = response.data.data;
         Object.assign(pagination, response.data.pagination);
@@ -177,7 +178,7 @@ async function fetchBadges() {
 
 async function fetchCategories() {
     try {
-        const response = await axios.get(`${API_URL}/api/badges/categories`);
+        const response = await axios.get(`${API_URL}/api/v1/badges/categories`);
         categories.value = response.data.data;
     } catch (error) {
         console.error('Failed to fetch categories:', error);
@@ -186,7 +187,7 @@ async function fetchCategories() {
 
 async function fetchRarities() {
     try {
-        const response = await axios.get(`${API_URL}/api/badges/rarities`);
+        const response = await axios.get(`${API_URL}/api/v1/badges/rarities`);
         rarities.value = response.data.data;
     } catch (error) {
         console.error('Failed to fetch rarities:', error);
@@ -232,7 +233,7 @@ async function confirmDelete(badge) {
     }
 
     try {
-        await axios.delete(`${API_URL}/api/badges/${badge.id}`);
+        await axios.delete(`${API_URL}/api/v1/badges/${badge.id}`);
         await fetchBadges();
     } catch (error) {
         console.error('Failed to delete badge:', error);
@@ -276,8 +277,6 @@ function handleImageError(event) {
 </script>
 
 <style scoped>
-
-
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;

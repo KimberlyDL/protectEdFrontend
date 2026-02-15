@@ -1,273 +1,389 @@
 <template>
-    <div class="reward-management p-6">
-        <div class="mb-6 flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-gray-800">Reward Management</h1>
-            <button @click="openCreateModal"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                <Plus class="w-5 h-5 inline mr-2" />
-                Create Reward
+    <div class="reward-management">
+        <div class="header">
+            <h1>Reward Management</h1>
+            <button @click="openCreateModal" class="btn-primary">
+                + Add New Reward
             </button>
         </div>
 
-        <!-- Filters -->
-        <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <input v-model="filters.search" @input="debouncedSearch" type="text" placeholder="Search rewards..."
-                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" />
-            <select v-model="filters.rewardType" @change="fetchRewards"
-                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <option value="">All Types</option>
-                <option value="badge">Badge</option>
-                <option value="points">Points</option>
-                <option value="unlock">Unlock</option>
-                <option value="title">Title</option>
-                <option value="combo">Combo</option>
-            </select>
-            <select v-model="filters.isActive" @change="fetchRewards"
-                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <option value="">All Status</option>
-                <option value="true">Active</option>
-                <option value="false">Inactive</option>
-            </select>
-            <select v-model="filters.isRepeatable" @change="fetchRewards"
-                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                <option value="">All</option>
-                <option value="true">Repeatable</option>
-                <option value="false">One-time</option>
-            </select>
-        </div>
-
-        <!-- Loading -->
-        <div v-if="loading" class="flex justify-center items-center py-12">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-
-        <!-- Rewards List -->
-        <div v-else-if="rewards.length > 0" class="space-y-4">
-            <div v-for="reward in rewards" :key="reward.id"
-                class="reward-card bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
-                <div class="flex items-start gap-4">
-                    <!-- Badge Icon -->
-                    <div v-if="reward.badge" class="flex-shrink-0">
-                        <img :src="reward.badge.iconUrl" :alt="reward.badge.name"
-                            class="w-20 h-20 object-contain rounded-lg" @error="handleImageError" />
+        <div class="rewards-grid">
+            <div v-for="reward in rewards" :key="reward.id" class="reward-card">
+                <img :src="reward.image_url || '/placeholder-reward.png'" :alt="reward.name" class="reward-image" />
+                <div class="reward-info">
+                    <h3>{{ reward.name }}</h3>
+                    <p class="description">{{ reward.description }}</p>
+                    <div class="reward-meta">
+                        <span class="points">{{ reward.points_required }} points</span>
+                        <span class="stock" :class="{ 'low-stock': reward.stock_quantity < 5 }">
+                            Stock: {{ reward.stock_quantity }}
+                        </span>
                     </div>
-                    <div v-else class="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                        <Trophy class="w-10 h-10 text-gray-400" />
+                    <div class="reward-status">
+                        <span :class="['badge', reward.is_active ? 'active' : 'inactive']">
+                            {{ reward.is_active ? 'Active' : 'Inactive' }}
+                        </span>
+                        <span v-if="reward.category" class="category">{{ reward.category }}</span>
                     </div>
-
-                    <!-- Reward Info -->
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-start justify-between mb-2">
-                            <div>
-                                <h3 class="text-xl font-bold text-gray-800">{{ reward.name }}</h3>
-                                <p class="text-sm text-gray-600 mt-1">{{ reward.description }}</p>
-                            </div>
-                            <div class="flex gap-2">
-                                <button @click="openEditModal(reward)"
-                                    class="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm">
-                                    <Edit class="w-4 h-4 inline mr-1" />
-                                    Edit
-                                </button>
-                                <button @click="confirmDelete(reward)"
-                                    class="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm">
-                                    <Trash2 class="w-4 h-4 inline" />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-wrap gap-2 mt-3">
-                            <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                                {{ formatRewardType(reward.rewardType) }}
-                            </span>
-                            <span class="px-3 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded-full">
-                                {{ reward.requiredScore }} points required
-                            </span>
-                            <span v-if="reward.requiredLevel"
-                                class="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                                Level {{ reward.requiredLevel }}+
-                            </span>
-                            <span v-if="reward.isRepeatable"
-                                class="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                                Repeatable
-                                <span v-if="reward.cooldownDays">({{ reward.cooldownDays }}d cooldown)</span>
-                            </span>
-                            <span v-if="!reward.isActive"
-                                class="px-3 py-1 bg-gray-100 text-gray-800 text-xs font-medium rounded-full">
-                                Inactive
-                            </span>
-                        </div>
-
-                        <!-- Additional Info -->
-                        <div v-if="reward.pointsValue || reward.titleText" class="mt-3 text-sm text-gray-600">
-                            <span v-if="reward.pointsValue" class="mr-4">
-                                <strong>Points Value:</strong> {{ reward.pointsValue }}
-                            </span>
-                            <span v-if="reward.titleText">
-                                <strong>Title:</strong> {{ reward.titleText }}
-                            </span>
-                        </div>
-
-                        <!-- Date Range -->
-                        <div v-if="reward.validFrom || reward.validUntil" class="mt-2 text-xs text-gray-500">
-                            <Calendar class="w-3 h-3 inline mr-1" />
-                            <span v-if="reward.validFrom">From {{ formatDate(reward.validFrom) }}</span>
-                            <span v-if="reward.validUntil"> to {{ formatDate(reward.validUntil) }}</span>
-                        </div>
-                    </div>
+                </div>
+                <div class="reward-actions">
+                    <button @click="editReward(reward)" class="btn-edit">Edit</button>
+                    <button @click="deleteReward(reward.id)" class="btn-delete">Delete</button>
                 </div>
             </div>
         </div>
 
-        <!-- Empty State -->
-        <div v-else class="text-center py-12">
-            <Trophy class="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p class="text-gray-600 text-lg">No rewards found</p>
-            <button @click="openCreateModal"
-                class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                Create Your First Reward
-            </button>
-        </div>
+        <div v-if="showCreateModal || showEditModal" class="modal-overlay" @click="closeModals">
+            <div class="modal" @click.stop>
+                <h2>{{ showEditModal ? 'Edit Reward' : 'Create New Reward' }}</h2>
+                <form @submit.prevent="saveReward">
+                    <div class="form-group">
+                        <label>Reward Name *</label>
+                        <input v-model="formData.name" type="text" required />
+                    </div>
 
-        <!-- Pagination -->
-        <div v-if="pagination.totalPages > 1" class="mt-6 flex justify-center gap-2">
-            <button @click="changePage(pagination.page - 1)" :disabled="pagination.page === 1"
-                class="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50">
-                Previous
-            </button>
-            <span class="px-4 py-2">
-                Page {{ pagination.page }} of {{ pagination.totalPages }}
-            </span>
-            <button @click="changePage(pagination.page + 1)" :disabled="pagination.page === pagination.totalPages"
-                class="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50">
-                Next
-            </button>
-        </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea v-model="formData.description" rows="3"></textarea>
+                    </div>
 
-        <!-- Create/Edit Modal -->
-        <RewardModal v-if="showModal" :reward="selectedReward" @close="closeModal" @save="handleSave" />
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input v-model="formData.image_url" type="url" />
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Points Required *</label>
+                            <input v-model.number="formData.points_required" type="number" min="0" required />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Stock Quantity *</label>
+                            <input v-model.number="formData.stock_quantity" type="number" min="0" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Category</label>
+                        <input v-model="formData.category" type="text" placeholder="e.g., Electronics, Gift Cards" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input v-model="formData.is_active" type="checkbox" />
+                            Active (available for redemption)
+                        </label>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" @click="closeModals" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">
+                            {{ showEditModal ? 'Update' : 'Create' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
-import { Plus, Edit, Trash2, Trophy, Calendar } from 'lucide-vue-next';
-import axios from 'axios';
-import RewardModal from '@components/ui/reward_modal.vue';
+import { ref, onMounted } from 'vue';
+import api from '@/utils/api';
+import { useToast } from '@/utils/useToast';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-
+const toast = useToast();
 const rewards = ref([]);
-const loading = ref(false);
-const showModal = ref(false);
-const selectedReward = ref(null);
+const showCreateModal = ref(false);
+const showEditModal = ref(false);
+const editingId = ref(null);
 
-const filters = reactive({
-    search: '',
-    rewardType: '',
-    isActive: '',
-    isRepeatable: ''
+const formData = ref({
+    name: '',
+    description: '',
+    image_url: '',
+    points_required: 0,
+    stock_quantity: 0,
+    category: '',
+    is_active: true
 });
 
-const pagination = reactive({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
-});
+const fetchRewards = async () => {
+    try {
+        const response = await api.get('/api/v1/rewards');
+        rewards.value = response.data.data;
+    } catch (error) {
+        console.error('Failed to fetch rewards:', error);
+        toast.error('Failed to load rewards');
+    }
+};
 
-let debounceTimeout = null;
+// FIX: Added the missing openCreateModal function
+const openCreateModal = () => {
+    // Reset form data
+    formData.value = {
+        name: '',
+        description: '',
+        image_url: '',
+        points_required: 0,
+        stock_quantity: 0,
+        category: '',
+        is_active: true
+    };
+    editingId.value = null;
+    showCreateModal.value = true;
+};
+
+const editReward = (reward) => {
+    formData.value = { ...reward };
+    editingId.value = reward.id;
+    showEditModal.value = true;
+};
+
+const saveReward = async () => {
+    try {
+        if (showEditModal.value) {
+            await api.put(`/api/v1/rewards/${editingId.value}`, formData.value);
+            toast.success('Reward updated successfully');
+        } else {
+            await api.post('/api/v1/rewards', formData.value);
+            toast.success('Reward created successfully');
+        }
+        closeModals();
+        fetchRewards();
+    } catch (error) {
+        console.error('Failed to save reward:', error);
+        toast.error(error.response?.data?.message || 'Failed to save reward');
+    }
+};
+
+const deleteReward = async (id) => {
+    if (!confirm('Are you sure you want to delete this reward?')) return;
+
+    try {
+        await api.delete(`/api/v1/rewards/${id}`);
+        toast.success('Reward deleted successfully');
+        fetchRewards();
+    } catch (error) {
+        console.error('Failed to delete reward:', error);
+        toast.error(error.response?.data?.message || 'Failed to delete reward');
+    }
+};
+
+const closeModals = () => {
+    showCreateModal.value = false;
+    showEditModal.value = false;
+    editingId.value = null;
+    formData.value = {
+        name: '',
+        description: '',
+        image_url: '',
+        points_required: 0,
+        stock_quantity: 0,
+        category: '',
+        is_active: true
+    };
+};
 
 onMounted(() => {
     fetchRewards();
 });
-
-async function fetchRewards() {
-    loading.value = true;
-    try {
-        const params = {
-            page: pagination.page,
-            limit: pagination.limit,
-            ...filters
-        };
-
-        const response = await axios.get(`${API_URL}/api/rewards`, { params });
-
-        rewards.value = response.data.data;
-        Object.assign(pagination, response.data.pagination);
-    } catch (error) {
-        console.error('Failed to fetch rewards:', error);
-        alert('Failed to load rewards');
-    } finally {
-        loading.value = false;
-    }
-}
-
-function debouncedSearch() {
-    clearTimeout(debounceTimeout);
-    debounceTimeout = setTimeout(() => {
-        pagination.page = 1;
-        fetchRewards();
-    }, 500);
-}
-
-function changePage(newPage) {
-    pagination.page = newPage;
-    fetchRewards();
-}
-
-function openCreateModal() {
-    selectedReward.value = null;
-    showModal.value = true;
-}
-
-function openEditModal(reward) {
-    selectedReward.value = { ...reward };
-    showModal.value = true;
-}
-
-function closeModal() {
-    showModal.value = false;
-    selectedReward.value = null;
-}
-
-async function handleSave() {
-    closeModal();
-    await fetchRewards();
-}
-
-async function confirmDelete(reward) {
-    if (!confirm(`Are you sure you want to delete "${reward.name}"?`)) {
-        return;
-    }
-
-    try {
-        await axios.delete(`${API_URL}/api/rewards/${reward.id}`);
-        await fetchRewards();
-    } catch (error) {
-        console.error('Failed to delete reward:', error);
-        alert('Failed to delete reward');
-    }
-}
-
-function formatRewardType(type) {
-    return type.charAt(0).toUpperCase() + type.slice(1);
-}
-
-function formatDate(dateString) {
-    return new Date(dateString).toLocaleDateString();
-}
-
-function handleImageError(event) {
-    event.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect width="80" height="80" fill="%23ddd"/%3E%3C/svg%3E';
-}
 </script>
 
 <style scoped>
-.reward-card {
-    transition: all 0.3s ease;
+.reward-management {
+    padding: 2rem;
 }
 
-.reward-card:hover {
-    transform: translateY(-2px);
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.rewards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.reward-card {
+    background: white;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.reward-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+}
+
+.reward-info h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.25rem;
+}
+
+.description {
+    color: #666;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.reward-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.points {
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.stock {
+    color: #059669;
+}
+
+.stock.low-stock {
+    color: #dc2626;
+}
+
+.reward-status {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.badge.active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge.inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.category {
+    padding: 0.25rem 0.75rem;
+    background: #e0e7ff;
+    color: #3730a3;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+.reward-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-primary,
+.btn-edit,
+.btn-delete,
+.btn-secondary {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.875rem;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-edit {
+    background: #f59e0b;
+    color: white;
+    flex: 1;
+}
+
+.btn-delete {
+    background: #dc2626;
+    color: white;
+    flex: 1;
+}
+
+.btn-secondary {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkbox-label input {
+    width: auto;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
 }
 </style>

@@ -103,8 +103,6 @@
                     </div>
                 </div>
 
-
-
                 <div
                     class="bg-white dark:bg-abyss-800 rounded-xl p-8 border border-platinum-200 dark:border-abyss-700 shadow-sm">
                     <div class="flex items-center justify-between mb-6">
@@ -146,105 +144,64 @@
                             :key="res.name"
                             class="flex flex-col items-center p-4 bg-platinum-50 dark:bg-abyss-700/50 rounded-xl border border-platinum-100 dark:border-abyss-600 hover:border-safety-teal-300 transition-colors cursor-pointer group text-center">
                             <span class="text-2xl mb-2 group-hover:scale-110 transition-transform">{{ res.icon }}</span>
-                            <span class="text-xs font-bold text-abyss-700 dark:text-platinum-300">{{ res.name }}</span>
+                            <p class="text-xs font-bold text-abyss-900 dark:text-platinum-50">{{ res.name }}</p>
                         </div>
                     </div>
                 </div>
+
             </div>
 
-            <div class="space-y-6 lg:sticky lg:top-6">
+            <!-- Right Sidebar - Hidden on Mobile (< 1024px) -->
+            <div class="hidden lg:block lg:col-span-1 space-y-6">
+                <UserStatusCard :firstName="userFirstName" :totalPoints="stats.totalPoints"
+                    :modulesCompleted="stats.modulesCompleted" :badgesCount="badgesEarnedCount" :rank="userRank" />
 
                 <div
-                    class="bg-white dark:bg-abyss-800 rounded-2xl border border-platinum-200 dark:border-abyss-700 shadow-lg overflow-hidden">
-                    <div
-                        class="bg-gradient-to-br from-advocacy-purple-700 to-advocacy-purple-500 p-8 text-white text-center">
-                        <h1 class="text-2xl font-bold font-heading mb-1">Hi, {{ userFirstName }}! 👋</h1>
+                    class="bg-white dark:bg-abyss-800 rounded-xl p-6 border border-platinum-200 dark:border-abyss-700 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-abyss-900 dark:text-platinum-50 font-heading">Badges</h2>
+                        <router-link to="/stats"
+                            class="text-xs font-bold text-calm-lavender-600 dark:text-calm-lavender-400 hover:underline">
+                            View All →
+                        </router-link>
                     </div>
-
-                    <div class="p-8 text-center bg-white dark:bg-abyss-800">
-                        <div class="mb-6">
+                    <div class="grid grid-cols-3 gap-3">
+                        <div v-for="badge in badges.slice(0, 6)" :key="badge.id"
+                            class="flex flex-col items-center p-3 bg-platinum-50 dark:bg-abyss-700/30 rounded-xl hover:bg-calm-lavender-50 dark:hover:bg-calm-lavender-900/20 transition-colors cursor-pointer group">
+                            <span class="text-2xl mb-1 group-hover:scale-110 transition-transform">{{ badge.emoji
+                            }}</span>
                             <p
-                                class="text-xs text-platinum-500 dark:text-platinum-400 mb-1 font-bold uppercase tracking-widest">
-                                Lifetime Experience</p>
-                            <div class="flex items-baseline justify-center gap-1">
-                                <span class="text-5xl font-black text-vawc-orange-600 tracking-tighter">{{
-                                    stats.totalPoints.toLocaleString() }}</span>
-                                <span class="text-sm font-bold text-platinum-400">XP</span>
-                            </div>
-                        </div>
-
-                        <div
-                            class="flex justify-between items-center p-4 bg-platinum-50 dark:bg-abyss-900/50 rounded-xl border border-platinum-100 dark:border-abyss-700">
-                            <div class="text-center flex-1">
-                                <p class="text-[10px] text-platinum-400 uppercase font-black mb-1">Modules</p>
-                                <p class="text-lg font-bold text-safety-teal-450 dark:text-platinum-500">{{
-                                    stats.modulesCompleted }}</p>
-                            </div>
-                            <div class="w-px h-8 bg-platinum-200 dark:bg-abyss-700"></div>
-                            <div class="text-center flex-1">
-                                <p class="text-[10px] text-platinum-400 uppercase font-black mb-1">Badges</p>
-                                <p class="text-lg font-bold text-safety-teal-450 dark:text-platinum-500">{{ badgesEarnedCount
-                                    }}</p>
-                            </div>
-                            <div class="w-px h-8 bg-platinum-200 dark:bg-abyss-700"></div>
-                            <div class="text-center flex-1">
-                                <p class="text-[10px] text-platinum-400 uppercase font-black mb-1">Global Rank</p>
-                                <p class="text-lg font-bold text-safety-teal-450 dark:text-platinum-500">#{{ userRank }}</p>
-                            </div>
+                                class="text-[10px] font-bold text-abyss-900 dark:text-platinum-50 text-center truncate w-full">
+                                {{ badge.name }}</p>
                         </div>
                     </div>
                 </div>
 
                 <div
-                    class="bg-white dark:bg-abyss-800 rounded-xl border border-platinum-200 dark:border-abyss-700 shadow-md p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-bold text-abyss-900 dark:text-platinum-50 font-heading">Achievements
-                        </h3>
-                        <button @click="showAllBadges = !showAllBadges"
-                            class="text-xs font-bold text-advocacy-purple-600 dark:text-advocacy-purple-400 hover:underline">
-                            {{ showAllBadges ? 'Less' : 'View All' }}
-                        </button>
-                    </div>
-                    <div class="flex flex-wrap gap-4 transition-all duration-300 overflow-hidden"
-                        :class="showAllBadges ? 'max-h-[500px]' : 'max-h-[85px]'">
-                        <div v-for="badge in (showAllBadges ? badges : badges.slice(0, 3))" :key="badge.id"
-                            class="flex flex-col items-center gap-1 w-[68px]">
-                            <div class="w-14 h-14 rounded-full flex items-center justify-center text-2xl border border-platinum-100 dark:border-abyss-600 bg-platinum-50 dark:bg-abyss-700 shadow-sm hover:rotate-12 transition-transform"
-                                :title="badge.name">
-                                {{ badge.emoji }}
-                            </div>
-                            <span
-                                class="text-[11px] text-center font-bold text-platinum-500 dark:text-platinum-400 truncate w-full">{{
-                                badge.name }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    class="bg-white dark:bg-abyss-800 rounded-xl border border-platinum-200 dark:border-abyss-700 shadow-md p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-bold text-abyss-900 dark:text-platinum-50 font-heading">Leaderboard</h3>
-                        <span class="text-xs font-bold text-platinum-400 uppercase tracking-widest">Top
-                            Performers</span>
+                    class="bg-white dark:bg-abyss-800 rounded-xl p-6 border border-platinum-200 dark:border-abyss-700 shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold text-abyss-900 dark:text-platinum-50 font-heading">Leaderboard</h2>
+                        <router-link to="/leaderboard"
+                            class="text-xs font-bold text-safety-teal-600 dark:text-safety-teal-400 hover:underline">
+                            View All →
+                        </router-link>
                     </div>
                     <div class="space-y-3">
-                        <div v-for="(player, index) in leaderboard" :key="player.id"
-                            class="flex items-center justify-between p-3 rounded-lg transition-colors"
-                            :class="player.name === 'You' ? 'bg-safety-teal-50 dark:bg-safety-teal-900/20 border border-safety-teal-100 dark:border-safety-teal-800' : 'bg-platinum-50 dark:bg-abyss-700/30'">
-                            <div class="flex items-center gap-3">
-                                <span class="text-sm font-black w-5"
-                                    :class="index === 0 ? 'text-vawc-orange-500' : 'text-platinum-400'">
-                                    {{ index + 1 }}
-                                </span>
-                                <div
-                                    class="w-8 h-8 rounded-full bg-platinum-200 dark:bg-abyss-600 flex items-center justify-center text-xs">
-                                    {{ player.icon }}
-                                </div>
-                                <span class="text-sm font-bold text-abyss-800 dark:text-platinum-100">{{ player.name
-                                    }}</span>
+                        <div v-for="(player, index) in leaderboard.slice(0, 5)" :key="player.id"
+                            class="flex items-center gap-3 p-2 rounded-lg"
+                            :class="player.name === 'You' ? 'bg-calm-lavender-50 dark:bg-calm-lavender-900/20' : ''">
+                            <span class="w-6 text-center font-bold text-sm"
+                                :class="player.name === 'You' ? 'text-calm-lavender-600 dark:text-calm-lavender-400' : 'text-platinum-500 dark:text-platinum-400'">
+                                {{ index + 1 }}
+                            </span>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-bold text-xs text-abyss-900 dark:text-platinum-50 truncate">{{
+                                    player.name
+                                    }}</p>
+                                <p class="text-[10px] text-platinum-500 dark:text-platinum-400">{{ player.points }} XP
+                                </p>
                             </div>
-                            <span class="text-xs font-black text-vawc-orange-600 dark:text-vawc-orange-400">{{
-                                player.points }} XP</span>
+                            <span class="text-lg">{{ player.icon }}</span>
                         </div>
                     </div>
                 </div>
@@ -272,18 +229,31 @@
 
             </div>
         </div>
+
+        <!-- Mobile Quick Stats Card (Only visible on mobile < 1024px) -->
+        <div class="lg:hidden fixed bottom-4 right-4 z-40">
+            <router-link to="/stats"
+                class="flex items-center gap-3 bg-calm-lavender-600 text-white px-5 py-3 rounded-full shadow-lg hover:bg-calm-lavender-700 transition-all hover:scale-105">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <span class="font-bold text-sm">My Stats</span>
+            </router-link>
+        </div>
     </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import UserStatusCard from '@/components/ui/user_status_card.vue'
+
 
 // UI States
 const showAllGames = ref(false)
 const showAllBadges = ref(false)
 const showAllResources = ref(false)
 
-// User Data
 // User Data
 const currentUser = ref({ firstName: 'Alex' })
 const userFirstName = computed(() => currentUser.value.firstName)
@@ -295,7 +265,8 @@ const badges = ref([
     { id: 2, name: 'Committed', emoji: '💪' },
     { id: 3, name: 'Scholar', emoji: '📚' },
     { id: 4, name: 'Advocate', emoji: '🗣️' },
-    { id: 5, name: 'Guardian', emoji: '🛡️' }
+    { id: 5, name: 'Guardian', emoji: '🛡️' },
+    { id: 6, name: 'Explorer', emoji: '🔍' }
 ])
 
 // Dynamic Badge Count based on the array length
@@ -305,25 +276,26 @@ const stats = ref({
     totalPoints: 2450,
     modulesCompleted: 8,
 })
-// 1. Updated Leaderboard Data
-// 1. Raw Data (Unsorted)
+
+// Raw Data (Unsorted)
 const players = ref([
     { id: 101, name: 'Elena R.', points: 3120, icon: '🌟' },
     { id: 1, name: 'You', points: 2450, icon: '👤' },
     { id: 102, name: 'Marcus K.', points: 2100, icon: '🛡️' },
-    { id: 103, name: 'Sarah J.', points: 2900, icon: '🌿' } // Example: Increased Sarah's points
+    { id: 103, name: 'Sarah J.', points: 2900, icon: '🌿' }
 ])
 
-// 2. Computed Leaderboard (Automatically sorts by points descending)
+// Computed Leaderboard (Automatically sorts by points descending)
 const leaderboard = computed(() => {
     return [...players.value].sort((a, b) => b.points - a.points)
 })
 
-// 3. Updated User Rank (Finds 'You' in the sorted leaderboard)
+// Updated User Rank (Finds 'You' in the sorted leaderboard)
 const userRank = computed(() => {
     const index = leaderboard.value.findIndex(player => player.name === 'You')
     return index !== -1 ? index + 1 : 0
 })
+
 // Content Data
 const currentModule = ref({ title: 'Gender Equality & Empowerment', progress: 65 })
 
@@ -355,7 +327,6 @@ const learningPaths = ref([
     { id: 1, name: 'Gender & Development Essentials', progress: 75 },
     { id: 2, name: 'Sexual Health & Safety', progress: 45 },
     { id: 3, name: 'Journey to Adultery', progress: 89 },
-    
 ])
 
 const recentActivities = ref([

@@ -61,16 +61,22 @@ export const learnerPages = [
     //     meta: { title: 'Stress Meter' }
     // },
     {
-        path: 'profile',
-        name: 'user.profile',
-        component: ProfileView,
-        meta: { title: 'My Profile' }
+        path: 'stats',
+        name: 'user.stats',
+        component: () => import('@/views/dashboard/UserStats.vue'),
+        meta: { requiresAuth: true }
     },
-    {
-        path: 'settings',
-        name: 'user.settings',
-        component: SettingsView,
-        meta: { title: 'Settings' }
-    },
+    // {
+    //     path: 'profile',
+    //     name: 'user.profile',
+    //     component: ProfileView,
+    //     meta: { title: 'My Profile' }
+    // },
+    // {
+    //     path: 'settings',
+    //     name: 'user.settings',
+    //     component: SettingsView,
+    //     meta: { title: 'Settings' }
+    // },
 
 ];

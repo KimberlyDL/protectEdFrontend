@@ -59,16 +59,16 @@ export const adminPages = [
     //     component: () => import('@/views/admin/ActivityLog.vue'),
     //     meta: { title: 'System Audit' }
     // },
-    {
-        path: 'profile',
-        name: 'admin.profile',
-        component: ProfileView,
-        meta: { title: 'My Profile' }
-    },
-    {
-        path: 'settings',
-        name: 'admin.settings',
-        component: SettingsView,
-        meta: { title: 'Account Settings' }
-    }
+    // {
+    //     path: 'profile',
+    //     name: 'admin.profile',
+    //     component: ProfileView,
+    //     meta: { title: 'My Profile' }
+    // },
+    // {
+    //     path: 'settings',
+    //     name: 'admin.settings',
+    //     component: SettingsView,
+    //     meta: { title: 'Account Settings' }
+    // }
 ];

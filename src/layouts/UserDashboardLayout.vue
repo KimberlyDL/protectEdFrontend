@@ -25,7 +25,7 @@
 <script setup>
 import { ref } from 'vue'
 import DashboardHeader from '@/components/nav/user_dashboard_header.vue'
-import DashboardSidebar from '@/components/nav/user_dashboard_sidebar.vue'
+import DashboardSidebar from '@/components/nav/user_dashboard_sidebar_simplified.vue'
 
 const mobileOpen = ref(false)
 const isFull = ref(false) // from sidebar expand/collapse (md+)

@@ -65,9 +65,9 @@
                             transition" />
                         <p class="text-sm text-platinum-600 dark:text-platinum-300">
                             I agree to the
-                            <a class="text-azure-blue-600 hover:underline font-medium">Terms</a>
+                            <a class="text-azure-blue-600 dark:text-azure-blue-400 hover:text-azure-blue-700 hover:underline transition-colors font-medium">Terms</a>
                             and
-                            <a class="text-azure-blue-600 hover:underline font-medium">Privacy Policy</a>
+                            <a class="text-azure-blue-600 dark:text-azure-blue-400 hover:text-azure-blue-700 hover:underline transition-colors font-medium">Privacy Policy</a>
                         </p>
                     </div>
 

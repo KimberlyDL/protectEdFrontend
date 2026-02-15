@@ -92,16 +92,16 @@ export const facilitatorPages = [
     //     component: () => import('@/views/facilitator/Reports.vue'),
     //     meta: { title: 'Progress Reports' }
     // },
-    {
-        path: 'profile',
-        name: 'facilitator.profile',
-        component: ProfileView,
-        meta: { title: 'My Profile' }
-    },
-    {
-        path: 'settings',
-        name: 'facilitator.settings',
-        component: SettingsView,
-        meta: { title: 'Settings' }
-    },
+    // {
+    //     path: 'profile',
+    //     name: 'facilitator.profile',
+    //     component: ProfileView,
+    //     meta: { title: 'My Profile' }
+    // },
+    // {
+    //     path: 'settings',
+    //     name: 'facilitator.settings',
+    //     component: SettingsView,
+    //     meta: { title: 'Settings' }
+    // },
 ];

@@ -127,6 +127,7 @@
 import { ref, reactive, computed, watch } from 'vue';
 import { X, ImagePlus } from 'lucide-vue-next';
 import axios from 'axios';
+import { getBadgeUrl } from '@/utils/cloudflare';
 
 const props = defineProps({
     badge: Object,
@@ -136,7 +137,7 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'save']);
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 const isEdit = computed(() => !!props.badge);
 const loading = ref(false);
@@ -162,7 +163,11 @@ watch(() => props.badge, (badge) => {
         form.rarity = badge.rarity;
         form.sortOrder = badge.sortOrder;
         form.isActive = badge.isActive;
-        previewUrl.value = badge.iconUrl;
+
+        // Construct preview URL from iconKey using Cloudflare Worker
+        if (badge.iconKey) {
+            previewUrl.value = getBadgeUrl(badge.iconKey);
+        }
     }
 }, { immediate: true });
 
@@ -213,12 +218,12 @@ async function handleSubmit() {
 
         if (isEdit.value) {
             // Update badge
-            await axios.put(`${API_URL}/api/badges/${props.badge.id}`, formData, {
+            await axios.put(`${API_URL}/api/v1/badges/${props.badge.id}`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
         } else {
             // Create badge
-            await axios.post(`${API_URL}/api/badges`, formData, {
+            await axios.post(`${API_URL}/api/v1/badges`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
         }

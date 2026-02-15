@@ -1,7 +1,7 @@
 <!-- src\App.vue -->
 
 <template>
-    <div class="min-h-screen bg-platinum-50 dark:bg-abyss-900">
+    <div class="min-h-screen bg-platinum-50 dark:bg-abyss-700">
         <ToastContainer />
         <router-view />
     </div>

@@ -1,11 +1,9 @@
 <template>
     <div
-        class="min-h-screen w-full grid grid-cols-1 md:grid-cols-2 bg-platinum-50 dark:bg-abyss-700 p-3 sm:p-4 md:p-0 transition-colors duration-300">
-
+        class="max-h-full min-h-screen w-full grid grid-cols-1 md:grid-cols-2 bg-platinum-50 dark:bg-abyss-700 p-3 sm:p-4 md:p-0 transition-colors duration-300 overflow-auto">
         <div class="relative w-full h-[20vh] md:h-full overflow-hidden rounded-2xl md:rounded-none">
-            <div class="absolute inset-0 md:p-4 lg:p-6 bg-platinum-50 dark:bg-abyss-700 transition-colors duration-300">
+            <div class="absolute inset-0 md:p-4 lg:p-6 transition-colors duration-300">
                 <div class="relative h-full w-full overflow-hidden rounded-2xl">
-
                     <div
                         class="absolute inset-0 animate-mesh-flow bg-[length:300%_300%] bg-gradient-to-br from-calm-lavender-500 via-azure-blue-600 to-neon-pink-500">
                     </div>
@@ -38,9 +36,7 @@
                     </svg>
 
                     <div class="relative z-10 flex h-full flex-col text-white p-6 md:p-10">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-xs md:text-sm font-semibold tracking-widest uppercase opacity-80">{{ artist
-                                }}</h2>
+                        <div class="flex items-center justify-end">
                             <div class="hidden sm:flex items-center gap-2">
                                 <router-link :to="{ name: 'signup' }"
                                     class="px-4 py-1.5 text-xs rounded-full bg-white/10 hover:bg-white/20 backdrop-blur transition-all border border-white/10">Join

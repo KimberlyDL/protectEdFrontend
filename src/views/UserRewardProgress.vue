@@ -68,7 +68,7 @@
                 <div class="flex items-start gap-4">
                     <!-- Badge Icon -->
                     <div v-if="item.reward.badge" class="flex-shrink-0">
-                        <img :src="item.reward.badge.iconUrl" :alt="item.reward.badge.name"
+                        <img :src="getBadgeUrl(item.reward.badge.iconKey)" :alt="item.reward.badge.name"
                             class="w-20 h-20 object-contain rounded-lg"
                             :class="{ 'opacity-50 grayscale': !item.earned }" />
                     </div>
@@ -134,7 +134,7 @@
                 class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition">
                 <div class="flex flex-col items-center text-center">
                     <div v-if="userReward.reward.badge" class="mb-4">
-                        <img :src="userReward.reward.badge.iconUrl" :alt="userReward.reward.badge.name"
+                        <img :src="getBadgeUrl(userReward.reward.badge.iconKey)" :alt="userReward.reward.badge.name"
                             class="w-32 h-32 object-contain" />
                     </div>
                     <div v-else class="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center mb-4">
@@ -191,8 +191,9 @@ import { ref, computed, onMounted } from 'vue';
 import { Trophy, Target, CheckCircle } from 'lucide-vue-next';
 import axios from 'axios';
 import { useUserStore } from '@/stores/user'; // Adjust to your store path
+import { getBadgeUrl } from '@/utils/cloudflare';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 const userStore = useUserStore();
 const userId = computed(() => userStore.user?.id);
@@ -221,7 +222,7 @@ async function fetchProgress() {
     loading.value = true;
     try {
         const response = await axios.get(
-            `${API_URL}/api/rewards/user/${userId.value}/progress`,
+            `${API_URL}/api/v1/rewards/user/${userId.value}/progress`,
             {
                 params: { currentScore: currentScore.value }
             }
@@ -238,7 +239,7 @@ async function fetchEarnedRewards() {
     if (!userId.value) return;
 
     try {
-        const response = await axios.get(`${API_URL}/api/rewards/user/${userId.value}`);
+        const response = await axios.get(`${API_URL}/api/v1/rewards/user/${userId.value}`);
         earnedRewards.value = response.data.data;
     } catch (error) {
         console.error('Failed to fetch earned rewards:', error);
@@ -249,7 +250,7 @@ async function fetchStats() {
     if (!userId.value) return;
 
     try {
-        const response = await axios.get(`${API_URL}/api/rewards/user/${userId.value}/stats`);
+        const response = await axios.get(`${API_URL}/api/v1/rewards/user/${userId.value}/stats`);
         stats.value = response.data.data;
     } catch (error) {
         console.error('Failed to fetch stats:', error);

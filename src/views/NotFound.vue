@@ -15,20 +15,20 @@ function goBack() {
 
 <template>
     <div
-        class="min-h-screen flex items-center justify-center bg-platinum-50 dark:bg-abyss-900 py-12 px-4 sm:px-6 lg:px-8">
+        class="min-h-screen flex items-center justify-center bg-platinum-50 dark:bg-abyss-700 py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8 text-center">
             <div
-                class="p-10 bg-sun-50 dark:bg-abyss-800 border border-sun-200 dark:border-abyss-700 rounded-xl shadow-2xl">
+                class="p-10 bg-calm-lavender-50 dark:bg-abyss-800 border border-calm-lavender-200 dark:border-abyss-500 rounded-2xl">
 
                 <div class="flex justify-center mb-6">
                     <Frown class="w-16 h-16 text-sun-600 dark:text-sun-400" :stroke-width="1.5" />
                 </div>
 
-                <h1 class="text-6xl font-extrabold text-abyss-900 dark:text-platinum-50 mb-3">
+                <h1 class="text-6xl font-extrabold text-abyss-800 dark:text-platinum-100 mb-3">
                     404
                 </h1>
 
-                <h2 class="text-2xl font-semibold text-abyss-800 dark:text-platinum-100 mb-4">
+                <h2 class="text-2xl font-semibold text-abyss-700 dark:text-platinum-200 mb-4">
                     Page Not Found
                 </h2>
 
@@ -40,7 +40,7 @@ function goBack() {
                 <div class="mt-8 flex flex-col sm:flex-row justify-center gap-3">
                     <button @click="goHome"
                         class="flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-all duration-300
-                            bg-calm-lavender-600 hover:bg-calm-lavender-700 dark:hover:bg-calm-lavender-500 text-platinum-50 dark:text-abyss-900 shadow-lg shadow-calm-lavender-500/20">
+                            bg-calm-lavender-600 hover:bg-calm-lavender-700 dark:hover:bg-calm-lavender-500 text-platinum-50 dark:platinum-50">
                         Go to Homepage
                     </button>
                     <button @click="goBack"

@@ -147,10 +147,84 @@ export const useAuthStore = defineStore("auth", () => {
         return api.post("/api/v1/auth/reset-password", payload);
     }
 
+
+
+
+    // ===== SCORE & REWARD MANAGEMENT =====
+    /**
+     * Update user score and check for new rewards
+     * Call this after quiz completion, lesson completion, etc.
+     */
+    async function updateScore(pointsToAdd) {
+        try {
+            const { data } = await api.post("/api/v1/user/update-score", {
+                points: pointsToAdd
+            });
+
+            // Update local user state
+            if (user.value) {
+                user.value.score = data.newScore;
+                if (data.newLevel) {
+                    user.value.level = data.newLevel;
+                }
+            }
+
+            // Return info about new rewards
+            return {
+                success: true,
+                newScore: data.newScore,
+                newLevel: data.newLevel,
+                newRewards: data.newRewards || [],
+                leveledUp: data.leveledUp || false
+            };
+        } catch (e) {
+            throw new Error(e?.response?.data?.message || "Failed to update score");
+        }
+    }
+
+    /**
+     * Get user's reward progress
+     */
+    async function fetchRewardProgress() {
+        try {
+            if (!user.value) return null;
+
+            const { data } = await api.get(`/api/v1/rewards/user/${user.value.id}/progress`, {
+                params: {
+                    currentScore: user.value.score,
+                    userLevel: user.value.level
+                }
+            });
+
+            return data.data;
+        } catch (e) {
+            console.error("Failed to fetch reward progress:", e);
+            return null;
+        }
+    }
+
+    /**
+     * Get unviewed rewards count (for notification badge)
+     */
+    async function getUnviewedRewardsCount() {
+        try {
+            if (!user.value) return 0;
+
+            const { data } = await api.get(`/api/v1/rewards/user/${user.value.id}/stats`);
+            return data.data.unviewedRewards || 0;
+        } catch (e) {
+            return 0;
+        }
+    }
+
     return {
         user, isLoading, isAuthenticated, me, pendingEmail, activeSessions,
         signup, login, logout, logoutAll, fetchUser, setPendingEmail, restoreSession,
         fetchSessions, changePassword, resendVerificationEmail,
-        requestPasswordReset, performPasswordReset, loginWithGoogle
+        requestPasswordReset, performPasswordReset, loginWithGoogle, 
+        
+        updateScore,
+        fetchRewardProgress,
+        getUnviewedRewardsCount
     };
 });

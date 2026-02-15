@@ -14,7 +14,8 @@ import api from './api';
 
 // ==================== CONFIGURATION ====================
 
-const WORKER_URL = import.meta.env.VITE_R2_PUBLIC_URL || '';
+const WORKER_URL = import.meta.env.VITE_R2_WORKER_ENDPOINT || '';
+// const WORKER_URL = import.meta.env.CLOUDFLARE2 || '';
 
 const FILE_LIMITS = {
     avatar: 5 * 1024 * 1024,      // 5MB
@@ -341,4 +342,49 @@ export function previewImage(file) {
 
         reader.readAsDataURL(file);
     });
+}
+
+
+
+
+/**
+ * Get the full URL for a badge icon from its storage key
+ * @param {string} iconKey - The R2 storage key (e.g., 'badges/123/icon.png')
+ * @returns {string} - The full URL to the badge image
+ */
+export function getBadgeUrl(iconKey) {
+    if (!iconKey) {
+        return null;
+    }
+
+    // If the iconKey already contains a protocol (full URL), return as-is
+    if (iconKey.startsWith('http://') || iconKey.startsWith('https://')) {
+        return iconKey;
+    }
+
+    // Otherwise, construct the full URL using the worker/R2 public URL
+    return `${WORKER_URL}/${iconKey}`;
+}
+
+/**
+ * Get badge URL with optional transformations (if your worker supports it)
+ * @param {string} iconKey - The R2 storage key
+ * @param {Object} options - Transformation options (width, height, quality, format)
+ * @returns {string} - The full URL with query parameters
+ */
+export function getBadgeUrlWithTransform(iconKey, options = {}) {
+    const baseUrl = getBadgeUrl(iconKey);
+
+    if (!baseUrl) return null;
+
+    const { width, height, quality, format } = options;
+    const params = new URLSearchParams();
+
+    if (width) params.append('width', width);
+    if (height) params.append('height', height);
+    if (quality) params.append('quality', quality);
+    if (format) params.append('format', format);
+
+    const queryString = params.toString();
+    return queryString ? `${baseUrl}?${queryString}` : baseUrl;
 }
